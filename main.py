@@ -3,36 +3,32 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 from pathlib import Path
 
-# 1. Configuração de Caminhos Dinâmicos
-# Define a pasta Downloads do usuário atual
+# 1. Configuração de Caminhos
 DOWNLOADS_PATH = Path.home() / "Downloads" / "Protocolos_Gerados"
 INPUT_EXCEL = "CONTROLE_DEVOLUCOES.xlsx"
 MODELO_PATH = "assets/modelo_protocolo.png"
-ASSINATURA_PATH = "assets/assinatura.png"
 
-# Criar a pasta dentro de Downloads se não existir
+# Criar a pasta no seu Downloads
 if not DOWNLOADS_PATH.exists():
     DOWNLOADS_PATH.mkdir(parents=True, exist_ok=True)
-    print(f"Diretório criado em: {DOWNLOADS_PATH}")
 
 def gerar_protocolos():
     try:
-        # Carregar dados do Excel
+        # Carregar planilha
         df = pd.read_excel(INPUT_EXCEL)
         
         for index, row in df.iterrows():
-            # Abrir o modelo
             with Image.open(MODELO_PATH).convert("RGB") as img:
                 draw = ImageDraw.Draw(img)
                 
-                # Configuração da Fonte (ajuste o caminho se necessário)
+                # Tentar carregar fonte padrão do Windows, se não, usa a básica
                 try:
-                    fonte = ImageFont.truetype("arial.ttf", 20)
+                    fonte = ImageFont.truetype("arial.ttf", 22)
                 except:
                     fonte = ImageFont.load_default()
 
-                # --- PREENCHIMENTO DOS CAMPOS (Ajuste X, Y conforme sua imagem) ---
-                # Protocolo MG-
+                # --- PREENCHIMENTO DOS CAMPOS ---
+                # Protocolo (Topo Direita)
                 draw.text((800, 48), str(row['protocolo']), fill="black", font=fonte)
                 # Cliente
                 draw.text((100, 145), str(row['cliente']), fill="black", font=fonte)
@@ -42,26 +38,16 @@ def gerar_protocolos():
                 draw.text((550, 242), str(row['cte']), fill="black", font=fonte)
                 # Data
                 draw.text((100, 310), str(row['data']), fill="black", font=fonte)
-                # Recebedor
+                # Dados do Recebedor (Nome e RG)
                 draw.text((100, 450), str(row['nome_recebedor']), fill="black", font=fonte)
 
-                # --- INSERIR ASSINATURA ---
-                if os.path.exists(ASSINATURA_PATH):
-                    assinatura = Image.open(ASSINATURA_PATH).convert("RGBA")
-                    # Redimensiona para caber na linha de assinatura
-                    assinatura = assinatura.resize((250, 60))
-                    # Cola a assinatura (X=150, Y=540 - ajuste se necessário)
-                    img.paste(assinatura, (150, 540), assinatura)
-
-                # --- SALVAR NA PASTA DOWNLOADS ---
+                # --- SALVAR ---
                 nome_arquivo = f"Protocolo_{row['protocolo']}.png"
-                caminho_final = DOWNLOADS_PATH / nome_arquivo
-                
-                img.save(caminho_final)
-                print(f"✅ Gerado com sucesso em Downloads: {nome_arquivo}")
+                img.save(DOWNLOADS_PATH / nome_arquivo)
+                print(f"✅ Protocolo de {row['cliente']} salvo em Downloads!")
 
     except Exception as e:
-        print(f"❌ Erro ao processar: {e}")
+        print(f"❌ Ocorreu um erro: {e}")
 
 if __name__ == "__main__":
     gerar_protocolos()
