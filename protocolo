@@ -1,54 +1,67 @@
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 import os
+from pathlib import Path
 
-# Configurações de Caminhos
+# 1. Configuração de Caminhos Dinâmicos
+# Define a pasta Downloads do usuário atual
+DOWNLOADS_PATH = Path.home() / "Downloads" / "Protocolos_Gerados"
 INPUT_EXCEL = "CONTROLE_DEVOLUCOES.xlsx"
 MODELO_PATH = "assets/modelo_protocolo.png"
 ASSINATURA_PATH = "assets/assinatura.png"
-OUTPUT_DIR = "protocolos_gerados"
 
-# Criar pasta de saída se não existir
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+# Criar a pasta dentro de Downloads se não existir
+if not DOWNLOADS_PATH.exists():
+    DOWNLOADS_PATH.mkdir(parents=True, exist_ok=True)
+    print(f"Diretório criado em: {DOWNLOADS_PATH}")
 
 def gerar_protocolos():
     try:
-        # Carregar dados
+        # Carregar dados do Excel
         df = pd.read_excel(INPUT_EXCEL)
         
-        for index, linha in df.iterrows():
-            # Abrir imagem base
+        for index, row in df.iterrows():
+            # Abrir o modelo
             with Image.open(MODELO_PATH).convert("RGB") as img:
                 draw = ImageDraw.Draw(img)
                 
-                # Use uma fonte padrão do sistema ou coloque o .ttf na pasta assets
+                # Configuração da Fonte (ajuste o caminho se necessário)
                 try:
                     fonte = ImageFont.truetype("arial.ttf", 20)
                 except:
                     fonte = ImageFont.load_default()
 
-                # Preenchimento dos campos (Coordenadas X, Y aproximadas)
-                # Você deve ajustar esses números baseando-se em pixels
-                draw.text((800, 45), f"{linha['protocolo']}", fill="black", font=fonte)
-                draw.text((100, 145), str(linha['cliente']), fill="black", font=fonte)
-                draw.text((150, 240), str(linha['nota_fiscal']), fill="black", font=fonte)
-                draw.text((550, 240), str(linha['cte']), fill="black", font=fonte)
-                
-                # Inserir Assinatura Digital
+                # --- PREENCHIMENTO DOS CAMPOS (Ajuste X, Y conforme sua imagem) ---
+                # Protocolo MG-
+                draw.text((800, 48), str(row['protocolo']), fill="black", font=fonte)
+                # Cliente
+                draw.text((100, 145), str(row['cliente']), fill="black", font=fonte)
+                # Nota Fiscal
+                draw.text((150, 242), str(row['nota_fiscal']), fill="black", font=fonte)
+                # CTE
+                draw.text((550, 242), str(row['cte']), fill="black", font=fonte)
+                # Data
+                draw.text((100, 310), str(row['data']), fill="black", font=fonte)
+                # Recebedor
+                draw.text((100, 450), str(row['nome_recebedor']), fill="black", font=fonte)
+
+                # --- INSERIR ASSINATURA ---
                 if os.path.exists(ASSINATURA_PATH):
                     assinatura = Image.open(ASSINATURA_PATH).convert("RGBA")
-                    # Redimensiona a assinatura para caber no campo
-                    assinatura = assinatura.resize((250, 80))
-                    img.paste(assinatura, (150, 550), assinatura)
+                    # Redimensiona para caber na linha de assinatura
+                    assinatura = assinatura.resize((250, 60))
+                    # Cola a assinatura (X=150, Y=540 - ajuste se necessário)
+                    img.paste(assinatura, (150, 540), assinatura)
 
-                # Salvar resultado
-                nome_final = f"Protocolo_{linha['protocolo']}.png"
-                img.save(os.path.join(OUTPUT_DIR, nome_final))
-                print(f"Sucesso: {nome_final} gerado.")
+                # --- SALVAR NA PASTA DOWNLOADS ---
+                nome_arquivo = f"Protocolo_{row['protocolo']}.png"
+                caminho_final = DOWNLOADS_PATH / nome_arquivo
+                
+                img.save(caminho_final)
+                print(f"✅ Gerado com sucesso em Downloads: {nome_arquivo}")
 
     except Exception as e:
-        print(f"Erro ao processar: {e}")
+        print(f"❌ Erro ao processar: {e}")
 
 if __name__ == "__main__":
     gerar_protocolos()
