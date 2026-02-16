@@ -8,7 +8,7 @@ from pathlib import Path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Caminho da Planilha (deve estar na mesma pasta que este script)
-INPUT_EXCEL = os.path.join(BASE_DIR, "CONTROLE_DEVOLUCOES.xlsx")
+INPUT_EXCEL = os.path.join(BASE_DIR, "requirements.txt")
 
 # Caminho do Modelo (dentro da pasta assets)
 MODELO_PATH = os.path.join(BASE_DIR, "assets", "modelo_protocolo.png")
