@@ -7,7 +7,7 @@ from pathlib import Path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # NOME ATUALIZADO DA SUA PLANILHA
-NOME_PLANILHA = "dados.xlsx" 
+NOME_PLANILHA = "Dados.xlsx" 
 INPUT_EXCEL = os.path.join(BASE_DIR, NOME_PLANILHA)
 
 # Caminho do Modelo dentro da pasta assets
